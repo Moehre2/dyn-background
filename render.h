@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <sys/types.h>
 
 #ifndef RENDER_H
 #define RENDER_H
@@ -10,5 +11,7 @@ typedef struct {
 typedef struct {
     rgb top, bottom;
 } background;
+
+int render_render(char *outputfile, uint width, uint height);
 
 #endif

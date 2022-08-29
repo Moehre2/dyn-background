@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "render.h"
 
 static background backgrounds[23] = {
@@ -94,3 +95,15 @@ static background backgrounds[23] = {
         .bottom = { .r =   1, .g =  33, .b =  79 }
     }
 };
+
+int render_render(char *outputfile, uint width, uint height) {
+    FILE *fp;
+
+    fp = fopen(outputfile, "w+");
+    fprintf(fp, "<?xml version=\"1.0\" encoding=\"UTF-8\"?><svg width=\"%d\" height=\"%d\"><defs><linearGradient id=\"grad1\" x1=\"0%%\" y1=\"0%%\" x2=\"0%%\" y2=\"100%%\">", width, height);
+    fprintf(fp, "<stop offset=\"0%%\" style=\"stop-color:rgb(%d,%d,%d);stop-opacity:1\" />", backgrounds[9].top.r, backgrounds[9].top.g, backgrounds[9].top.b);
+    fprintf(fp, "<stop offset=\"100%%\" style=\"stop-color:rgb(%d,%d,%d);stop-opacity:1\" />", backgrounds[9].bottom.r, backgrounds[9].bottom.g, backgrounds[9].bottom.b);
+    fprintf(fp, "</linearGradient></defs><rect x=\"0\" y=\"0\" width=\"%d\" height=\"%d\" fill=\"url(#grad1)\" /></svg>", width, height);
+    fclose(fp);
+    return 0;
+}
