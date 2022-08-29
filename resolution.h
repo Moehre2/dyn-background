@@ -5,7 +5,7 @@
 #define XRANDR_OUTPUT_LENGTH 4096
 
 typedef struct {
-    uint x, y;
+    uint width, height;
 } resolution;
 
 int resolution_getResolution(resolution *res);

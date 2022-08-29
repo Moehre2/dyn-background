@@ -10,7 +10,7 @@ clean:
 	rm -f $(REBUILDABLES)
 
 $(LINK_TARGET): $(OBJS)
-	gcc -o $@ $^ -lrt
+	gcc -o $@ $^ -lX11 -lXrandr
 
 %.o: %.c
 	gcc -o $@ -c $<
