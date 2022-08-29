@@ -1,7 +1,8 @@
 LINK_TARGET = dyn-background
 OBJS = \
 	dyn-background.o \
-	resolution.o
+	resolution.o \
+	render.o
 REBUILDABLES = $(OBJS) $(LINK_TARGET)
 
 all: $(LINK_TARGET)

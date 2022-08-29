@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "resolution.h"
+#include "render.h"
 
 int main(int argc, char **argv) {
     resolution res;
