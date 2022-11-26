@@ -1,7 +1,11 @@
 #include <stdio.h>
+#include <time.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
 #include "render.h"
 
-static background backgrounds[23] = {
+static background backgrounds[NUM_OF_BACKGROUNDS] = {
     {
         .top    = { .r =   0, .g =  33, .b =  81 },
         .bottom = { .r =   0, .g =  19, .b =  32 }
@@ -96,14 +100,74 @@ static background backgrounds[23] = {
     }
 };
 
+int getBgIndex(void) {
+    const int minutesPerDay = 1440;
+    time_t rawtime;
+    struct tm *timeinfo;
+
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+    return ((timeinfo->tm_hour * 60 + timeinfo->tm_min) * NUM_OF_BACKGROUNDS) / minutesPerDay;
+}
+
+int exists(const char *path, const char *filename) {
+    char *filepath;
+    int res;
+
+    filepath = (char *) malloc(strlen(path) + strlen(filename) + 1);
+    strcpy(filepath, path);
+    strcat(filepath, "/");
+    strcat(filepath, filename);
+    res = access(filepath, X_OK);
+    free(filepath);
+    return (res != -1);
+}
+
+int which(char *command, char *outputpath) {
+    char *paths;
+    int i, j;
+
+    paths = getenv("PATH");
+    strcpy(outputpath, paths);
+    for(i = 0, j = 0; *(paths + i) != '\0'; i++, j++) {
+        if(*(paths + i) == ':') {
+            *(outputpath + j) = '\0';
+            if(exists(outputpath, command)) {
+                strcpy(outputpath, "/");
+                strcat(outputpath, command);
+                return 1;
+            }
+            j = -1;
+        } else
+            *(outputpath + j) = *(outputpath + i);
+    }
+    return 0;
+}
+
 int render_render(char *outputfile, uint width, uint height) {
     FILE *fp;
+    int bgIndex;
 
+    bgIndex = getBgIndex();
     fp = fopen(outputfile, "w+");
     fprintf(fp, "<?xml version=\"1.0\" encoding=\"UTF-8\"?><svg width=\"%d\" height=\"%d\"><defs><linearGradient id=\"grad1\" x1=\"0%%\" y1=\"0%%\" x2=\"0%%\" y2=\"100%%\">", width, height);
-    fprintf(fp, "<stop offset=\"0%%\" style=\"stop-color:rgb(%d,%d,%d);stop-opacity:1\" />", backgrounds[9].top.r, backgrounds[9].top.g, backgrounds[9].top.b);
-    fprintf(fp, "<stop offset=\"100%%\" style=\"stop-color:rgb(%d,%d,%d);stop-opacity:1\" />", backgrounds[9].bottom.r, backgrounds[9].bottom.g, backgrounds[9].bottom.b);
+    fprintf(fp, "<stop offset=\"0%%\" style=\"stop-color:rgb(%d,%d,%d);stop-opacity:1\" />", backgrounds[bgIndex].top.r, backgrounds[bgIndex].top.g, backgrounds[bgIndex].top.b);
+    fprintf(fp, "<stop offset=\"100%%\" style=\"stop-color:rgb(%d,%d,%d);stop-opacity:1\" />", backgrounds[bgIndex].bottom.r, backgrounds[bgIndex].bottom.g, backgrounds[bgIndex].bottom.b);
     fprintf(fp, "</linearGradient></defs><rect x=\"0\" y=\"0\" width=\"%d\" height=\"%d\" fill=\"url(#grad1)\" /></svg>", width, height);
     fclose(fp);
-    return 0;
+    return 1;
+}
+
+int render_setWallpaper(char *outputfile) {
+    size_t filepathLength = strlen(getenv("PATH")) + 11;
+    char *filepath = malloc(filepathLength);
+    char *outputuri = malloc(strlen(outputfile) + 8);
+    strcpy(outputuri, "file://");
+    strcat(outputuri, outputfile);
+    which("gsettings", filepath);
+    char *args[] = {filepath, "set", "org.gnome.desktop.background", "picture-uri", outputuri, NULL};
+    int res = execve(filepath, args, __environ);
+    free(outputuri);
+    free(filepath);
+    return res;
 }
