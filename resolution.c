@@ -18,5 +18,5 @@ int resolution_getResolution(resolution *res) {
         XRRFreeCrtcInfo(crtc_info);
     }
     XRRFreeScreenResources(screen);
-    return screen->crtcs ? 1 : 0;
+    return (res->width > 0 && res->height > 0) ? 1 : 0;
 }
